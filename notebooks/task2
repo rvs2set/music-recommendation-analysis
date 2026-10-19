@@ -1,10 +1,7 @@
 import json
-from sentence_transformers import SentenceTransformer
 
-print("1. Загружаем модель для извлечения текстовых признаков...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+print("Задание 2: Обогащение треков семантическими признаками...")
 
-print("2. Читаем датасет из 50 треков...")
 input_file = "data/sample_tracks.jsonl"
 output_file = "data/tracks_with_features.jsonl"
 
@@ -13,17 +10,19 @@ with open(input_file, "r", encoding="utf-8") as f:
     for line in f:
         tracks.append(json.loads(line))
 
-captions = [t.get("caption", "") for t in tracks]
+# Извлекаем семантические категории из описания
+for track in tracks:
+    caption = track.get("caption", "").lower()
+    
+    track["features"] = {
+        "is_energetic": any(word in caption for word in ["fast", "energetic", "upbeat", "intense", "drum", "rock"]),
+        "is_calm": any(word in caption for word in ["slow", "calm", "relaxing", "soft", "peaceful", "ambient"]),
+        "has_vocals": any(word in caption for word in ["vocal", "singing", "voice", "female", "male", "sing"]),
+        "is_electronic": any(word in caption for word in ["synth", "electronic", "synthesizer", "edm", "beat", "techno"])
+    }
 
-print("3. Извлекаем семантические векторы признаков...")
-embeddings = model.encode(captions)
-
-for i, track in enumerate(tracks):
-    track["feature_vector"] = embeddings[i].tolist()
-
-print("4. Сохраняем данные...")
 with open(output_file, "w", encoding="utf-8") as f:
     for track in tracks:
         f.write(json.dumps(track, ensure_ascii=False) + "\n")
 
-print(f"Успешно! Извлечены признаки для {len(tracks)} треков и сохранены в {output_file}")
+print(f"Успешно обработано {len(tracks)} треков и сохранено в {output_file}")
