@@ -21,7 +21,7 @@ embeddings = model.encode(captions)
 for i, track in enumerate(tracks):
     track["feature_vector"] = embeddings[i].tolist()
 
-print("4. Сохраняем обогащенные данные...")
+print("4. Сохраняем данные...")
 with open(output_file, "w", encoding="utf-8") as f:
     for track in tracks:
         f.write(json.dumps(track, ensure_ascii=False) + "\n")
